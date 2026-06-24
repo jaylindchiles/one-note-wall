@@ -88,8 +88,6 @@
   </select>
 
   <button onclick="postNote()">Post</button>
-</div>
-  <button onclick="postNote()">Post</button>
   <button onclick="randomNote()">Random Note</button>
 </div>
 
@@ -180,7 +178,6 @@ onSnapshot(q, (snapshot) => {
       const div = document.createElement("div");
       div.className = "note";
 div.style.background = data.color || "#fff3a6";
-div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
 div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
       div.innerHTML = `
   <div class="pin"></div>
