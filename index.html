@@ -69,6 +69,12 @@
 <div id="inputBox">
   <input id="message" placeholder="Write your one note..." />
 <input id="song" placeholder="Paste Spotify link (optional)" />
+  <select id="color">
+  <option value="#fff3a6">Yellow</option>
+  <option value="#a6f3ff">Blue</option>
+  <option value="#ffa6d1">Pink</option>
+  <option value="#b7ffa6">Green</option>
+</select>
   <button onclick="postNote()">Post</button>
 </div>
 
@@ -105,12 +111,14 @@ const notesRef = collection(db, "notes");
 window.postNote = async function () {
   const msg = document.getElementById("message").value;
   const song = document.getElementById("song").value;
+  const color = document.getElementById("color").value;
 
   if (!msg) return;
 
   await addDoc(notesRef, {
     message: msg,
     song: song,
+    color: color,
     timestamp: Date.now()
   });
 
@@ -132,6 +140,8 @@ onSnapshot(q, (snapshot) => {
 
       const div = document.createElement("div");
       div.className = "note";
+div.style.background = data.color || "#fff3a6";
+div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
 div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
       div.innerHTML = `
   <div class="pin"></div>
