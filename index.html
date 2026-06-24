@@ -66,6 +66,7 @@
 
 <div id="inputBox">
   <input id="message" placeholder="Write your one note..." />
+<input id="song" placeholder="Paste Spotify link (optional)" />
   <button onclick="postNote()">Post</button>
 </div>
 
@@ -101,14 +102,18 @@ const notesRef = collection(db, "notes");
 // POST NOTE
 window.postNote = async function () {
   const msg = document.getElementById("message").value;
+  const song = document.getElementById("song").value;
+
   if (!msg) return;
 
   await addDoc(notesRef, {
     message: msg,
+    song: song,
     timestamp: Date.now()
   });
 
   document.getElementById("message").value = "";
+  document.getElementById("song").value = "";
 };
 
 // LIVE LOAD NOTES
@@ -126,9 +131,10 @@ onSnapshot(q, (snapshot) => {
       const div = document.createElement("div");
       div.className = "note";
       div.innerHTML = `
-        <div class="pin"></div>
-        ${data.message}
-      `;
+  <div class="pin"></div>
+  <div>${data.message}</div>
+  ${data.song ? `<a href="${data.song}" target="_blank">▶ Spotify Song</a>` : ""}
+`;
 
       board.appendChild(div);
     });
