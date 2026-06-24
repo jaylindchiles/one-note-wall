@@ -4,10 +4,10 @@
   <title>One Note Wall</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial;
-      background: #f2e7c9;
-    }
+  margin: 0;
+  font-family: Arial;
+  background: #b8864b; /* corkboard brown */
+}
 
     h1 {
       text-align: center;
@@ -40,24 +40,26 @@
     }
 
     .note {
-      width: 260px;
-      padding: 15px;
-      background: #fff176;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-      position: relative;
-      transform: rotate(-1deg);
-    }
+  width: 260px;
+  padding: 15px;
+  background: #fff3a6;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+  position: relative;
+  transform: rotate(var(--rot));
+  border-radius: 3px;
+}
 
     .pin {
-      width: 12px;
-      height: 12px;
-      background: red;
-      border-radius: 50%;
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000);
+  border-radius: 50%;
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+}
   </style>
 </head>
 <body>
@@ -130,6 +132,7 @@ onSnapshot(q, (snapshot) => {
 
       const div = document.createElement("div");
       div.className = "note";
+div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
       div.innerHTML = `
   <div class="pin"></div>
   <div>${data.message}</div>
