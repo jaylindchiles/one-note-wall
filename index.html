@@ -67,14 +67,28 @@
 <h1>One Note Wall</h1>
 
 <div id="inputBox">
+  <input id="name" placeholder="Your name (optional)" />
   <input id="message" placeholder="Write your one note..." />
-<input id="song" placeholder="Paste Spotify link (optional)" />
+  <input id="song" placeholder="Spotify link (optional)" />
+
   <select id="color">
-  <option value="#fff3a6">Yellow</option>
-  <option value="#a6f3ff">Blue</option>
-  <option value="#ffa6d1">Pink</option>
-  <option value="#b7ffa6">Green</option>
-</select>
+    <option value="#fff3a6">Yellow</option>
+    <option value="#a6f3ff">Blue</option>
+    <option value="#ffa6d1">Pink</option>
+    <option value="#b7ffa6">Green</option>
+  </select>
+
+  <select id="mood">
+    <option value="💬">Neutral</option>
+    <option value="❤️">Love</option>
+    <option value="😔">Sad</option>
+    <option value="🔥">Angry</option>
+    <option value="✨">Hope</option>
+    <option value="🧠">Advice</option>
+  </select>
+
+  <button onclick="postNote()">Post</button>
+</div>
   <button onclick="postNote()">Post</button>
   <button onclick="randomNote()">Random Note</button>
 </div>
@@ -110,19 +124,24 @@ const notesRef = collection(db, "notes");
 
 // POST NOTE
 window.postNote = async function () {
+  const name = document.getElementById("name").value;
   const msg = document.getElementById("message").value;
   const song = document.getElementById("song").value;
   const color = document.getElementById("color").value;
+  const mood = document.getElementById("mood").value;
 
   if (!msg) return;
 
   await addDoc(notesRef, {
+    name: name || "Anonymous",
     message: msg,
     song: song,
     color: color,
+    mood: mood,
     timestamp: Date.now()
   });
 
+  document.getElementById("name").value = "";
   document.getElementById("message").value = "";
   document.getElementById("song").value = "";
 };
@@ -139,6 +158,13 @@ window.randomNote = function () {
     selected.style.transform = "";
   }, 600);
 };
+  function extractSpotifyID(url) {
+  try {
+    return url.split("track/")[1].split("?")[0];
+  } catch {
+    return "";
+  }
+}
 // LIVE LOAD NOTES
 const q = query(notesRef);
 
@@ -158,8 +184,18 @@ div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
 div.style.setProperty("--rot", (Math.random() * 6 - 3) + "deg");
       div.innerHTML = `
   <div class="pin"></div>
+  <div style="font-size:12px; opacity:0.7;">
+    ${data.mood} ${data.name}
+  </div>
   <div>${data.message}</div>
-  ${data.song ? `<a href="${data.song}" target="_blank">▶ Spotify Song</a>` : ""}
+  ${data.song ? `
+    <iframe 
+      style="border-radius:12px; margin-top:10px;"
+      src="https://open.spotify.com/embed/track/${extractSpotifyID(data.song)}"
+      width="100%" 
+      height="80">
+    </iframe>
+  ` : ""}
 `;
 
       board.appendChild(div);
