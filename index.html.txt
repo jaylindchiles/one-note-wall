@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>One Note Wall</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f2e7c9;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+    }
+
+    #board {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding-bottom: 100px;
+    }
+
+    .note {
+      width: 250px;
+      padding: 15px;
+      background: yellow;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .pin {
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #inputBox {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    input {
+      width: 200px;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>One Note Wall</h1>
+
+<div id="inputBox">
+  <input id="message" placeholder="Write your one note..." />
+  <button onclick="postNote()">Post</button>
+</div>
+
+<div id="board"></div>
+
+<script>
+let notes = [];
+
+function postNote() {
+  const msg = document.getElementById("message").value;
+  if (!msg) return;
+
+  notes.unshift(msg);
+
+  document.getElementById("message").value = "";
+  render();
+}
+
+function render() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  notes.forEach(text => {
+    const div = document.createElement("div");
+    div.className = "note";
+    div.innerHTML = `
+      <div class="pin"></div>
+      ${text}
+    `;
+    board.appendChild(div);
+  });
+}
+</script>
+
+</body>
+</html>
