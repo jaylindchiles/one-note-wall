@@ -76,6 +76,7 @@
   <option value="#b7ffa6">Green</option>
 </select>
   <button onclick="postNote()">Post</button>
+  <button onclick="randomNote()">Random Note</button>
 </div>
 
 <div id="board"></div>
@@ -125,7 +126,19 @@ window.postNote = async function () {
   document.getElementById("message").value = "";
   document.getElementById("song").value = "";
 };
+window.randomNote = function () {
+  const notes = document.querySelectorAll(".note");
+  if (notes.length === 0) return;
 
+  const randomIndex = Math.floor(Math.random() * notes.length);
+  const selected = notes[randomIndex];
+
+  selected.scrollIntoView({ behavior: "smooth", block: "center" });
+  selected.style.transform = "scale(1.1)";
+  setTimeout(() => {
+    selected.style.transform = "";
+  }, 600);
+};
 // LIVE LOAD NOTES
 const q = query(notesRef);
 
