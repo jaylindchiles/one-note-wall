@@ -15,12 +15,12 @@
       padding: 10px;
     }
 
-    #topbar {
+    #topbar, #controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 8px;
       padding: 10px;
-      flex-wrap: wrap;
     }
 
     input, select, button {
@@ -32,25 +32,25 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 14px;
       padding-bottom: 80px;
     }
 
     .note {
-      width: 280px;
-      padding: 15px;
+      width: 290px;
+      padding: 14px;
       background: #fff3a6;
-      border-radius: 6px;
+      border-radius: 8px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.3);
+      position: relative;
     }
 
     .meta {
       display: flex;
       align-items: center;
-      font-size: 12px;
-      opacity: 0.7;
       gap: 6px;
-      margin-bottom: 6px;
+      font-size: 12px;
+      opacity: 0.75;
     }
 
     .avatar {
@@ -65,10 +65,35 @@
       font-size: 12px;
     }
 
-    .reactions span {
+    .pin {
+      position: absolute;
+      top: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: radial-gradient(circle, #ff4d4d, #900);
+      border-radius: 50%;
+    }
+
+    .actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .emoji-picker {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .emoji-picker span {
       cursor: pointer;
-      margin-right: 5px;
-      font-size: 12px;
+      font-size: 16px;
     }
 
     .reply {
@@ -76,6 +101,12 @@
       margin-left: 10px;
       border-left: 2px solid #999;
       padding-left: 6px;
+      margin-top: 4px;
+    }
+
+    .small-btn {
+      font-size: 12px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -84,18 +115,15 @@
 
 <h1>One Note Wall</h1>
 
-<!-- TOP BAR -->
 <div id="topbar">
   <button onclick="setPage('explore')">🌍 Explore</button>
   <button onclick="setPage('trending')">🔥 Trending</button>
   <button onclick="setPage('profile')">🧑 Profile</button>
-  <button onclick="enableNotifications()">🔔 Notifications</button>
 </div>
 
-<!-- INPUT -->
-<div id="topbar">
-  <input id="message" placeholder="Write note..." />
-  <input id="song" placeholder="Spotify link" />
+<div id="controls">
+  <input id="message" placeholder="Write a note..." />
+  <input id="song" placeholder="Spotify link (optional)" />
 
   <select id="color">
     <option value="#fff3a6">Yellow</option>
@@ -147,27 +175,20 @@ const notesRef = collection(db, "notes");
 let allNotes = [];
 let page = "explore";
 
-/* ---------------- PROFILE ---------------- */
+/* PROFILE */
 let user = localStorage.getItem("user");
 if (!user) {
-  user = prompt("Enter username") || "Anonymous";
+  user = prompt("Username") || "Anonymous";
   localStorage.setItem("user", user);
 }
 
-/* ---------------- PAGE SWITCH ---------------- */
+/* PAGE SWITCH */
 window.setPage = (p) => {
   page = p;
   render();
 };
 
-/* ---------------- NOTIFICATIONS (BASIC) ---------------- */
-window.enableNotifications = async function () {
-  if (!("Notification" in window)) return;
-  await Notification.requestPermission();
-  alert("Notifications enabled (base only)");
-};
-
-/* ---------------- POST ---------------- */
+/* POST */
 window.postNote = async function () {
   const msg = document.getElementById("message").value;
   if (!msg) return;
@@ -180,6 +201,7 @@ window.postNote = async function () {
     mood: document.getElementById("mood").value,
     reactions: {},
     replies: [],
+    pinned: false,
     timestamp: Date.now()
   });
 
@@ -187,77 +209,79 @@ window.postNote = async function () {
   document.getElementById("song").value = "";
 };
 
-/* ---------------- REACTIONS ---------------- */
-const reactionList = [
-  "❤️","😂","😭","🔥","👍","👏","😡","😱","💀","✨",
-  "🥺","😔","😴","🤯","💯","😎","🤍","💔","🙏","🎧"
-];
+/* SPOTIFY */
+function extractSpotifyID(url){
+  try { return url.split("track/")[1].split("?")[0]; }
+  catch { return ""; }
+}
 
-window.react = async function (id, emoji) {
-  const ref = doc(db, "notes", id);
+/* SMART TREND SCORE */
+function score(n){
+  const r = Object.values(n.reactions||{}).reduce((a,b)=>a+b,0);
+  const rep = (n.replies||[]).length;
+  const age = (Date.now() - n.timestamp)/10000000;
+  return r*2 + rep*3 - age;
+}
+
+/* EMOJIS */
+const emojis = ["❤️","😂","😭","🔥","👍","👏","😡","😱","💀","✨","🥺","😔","😴","🤯","💯","😎","🤍","💔","🙏","🎧"];
+
+window.react = async (id, e) => {
+  const ref = doc(db,"notes",id);
   const snap = await getDoc(ref);
   const data = snap.data();
 
   const r = data.reactions || {};
-  r[emoji] = (r[emoji] || 0) + 1;
+  r[e] = (r[e]||0)+1;
 
-  await updateDoc(ref, { reactions: r });
+  await updateDoc(ref,{reactions:r});
 };
 
-/* ---------------- REPLY ---------------- */
-window.reply = async function (id) {
-  const text = prompt("Reply:");
-  if (!text) return;
+/* TOGGLE EMOJI PICKER */
+window.toggleEmoji = (id) => {
+  const el = document.getElementById("emoji-"+id);
+  el.style.display = el.style.display === "flex" ? "none" : "flex";
+};
 
-  const ref = doc(db, "notes", id);
+/* REPLY */
+window.reply = async (id) => {
+  const text = prompt("Reply:");
+  if(!text) return;
+
+  const ref = doc(db,"notes",id);
   const snap = await getDoc(ref);
   const data = snap.data();
 
-  const replies = data.replies || [];
-  replies.push({ user, text, time: Date.now() });
+  const rep = data.replies || [];
+  rep.push({user,text,time:Date.now()});
 
-  await updateDoc(ref, { replies });
+  await updateDoc(ref,{replies:rep});
 };
 
-/* ---------------- SPOTIFY ---------------- */
-function extractSpotifyID(url) {
-  try {
-    return url.split("track/")[1].split("?")[0];
-  } catch {
-    return "";
-  }
-}
-
-/* ---------------- RENDER ---------------- */
-function render() {
+/* RENDER */
+function render(){
   const board = document.getElementById("board");
   board.innerHTML = "";
 
   let list = [...allNotes];
 
-  if (page === "profile") {
-    list = list.filter(n => n.name === user);
+  if(page==="profile") list = list.filter(n=>n.name===user);
+
+  if(page==="trending"){
+    list.sort((a,b)=>score(b)-score(a));
+  } else {
+    list.sort((a,b)=>b.timestamp-a.timestamp);
   }
 
-  if (page === "trending") {
-    list.sort((a, b) => {
-      const ar = Object.values(a.reactions || {}).reduce((x, y) => x + y, 0);
-      const br = Object.values(b.reactions || {}).reduce((x, y) => x + y, 0);
-      return br - ar;
-    });
-  }
-
-  if (page === "explore") {
-    list.sort((a, b) => b.timestamp - a.timestamp);
-  }
-
-  list.forEach(n => {
+  list.forEach(n=>{
     const div = document.createElement("div");
-    div.className = "note";
+    div.className="note";
 
-    const initial = (n.name || "A")[0].toUpperCase();
+    const initial = (n.name||"A")[0].toUpperCase();
 
-    div.innerHTML = `
+    div.innerHTML=`
+      <div class="pin"></div>
+
       <div class="meta">
         <div class="avatar">${initial}</div>
         ${n.mood} ${n.name}
@@ -267,23 +291,23 @@ function render() {
 
       ${n.song ? `
         <iframe width="100%" height="80"
-          style="margin-top:8px;border-radius:8px"
           src="https://open.spotify.com/embed/track/${extractSpotifyID(n.song)}">
         </iframe>
       ` : ""}
 
-      <button onclick="reply('${n.id}')">💬 Reply</button>
-
-      <div>
-        ${(n.replies || []).map(r =>
-          `<div class="reply">💬 <b>${r.user}</b>: ${r.text}</div>`
-        ).join("")}
+      <div class="actions">
+        <button class="small-btn" onclick="reply('${n.id}')">💬 Reply</button>
+        <button class="small-btn" onclick="toggleEmoji('${n.id}')">😊 React</button>
       </div>
 
-      <div class="reactions">
-        ${reactionList.map(r =>
-          `<span onclick="react('${n.id}','${r}')">${r} ${(n.reactions||{})[r]||0}</span>`
-        ).join("")}
+      <div id="emoji-${n.id}" class="emoji-picker">
+        ${emojis.map(e=>`<span onclick="react('${n.id}','${e}')">${e}</span>`).join("")}
+      </div>
+
+      <div>
+        ${(n.replies||[]).map(r=>`
+          <div class="reply"><b>${r.user}:</b> ${r.text}</div>
+        `).join("")}
       </div>
     `;
 
@@ -291,9 +315,9 @@ function render() {
   });
 }
 
-/* ---------------- LIVE ---------------- */
-onSnapshot(notesRef, (snap) => {
-  allNotes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+/* LIVE */
+onSnapshot(notesRef,(snap)=>{
+  allNotes = snap.docs.map(d=>({id:d.id,...d.data()}));
   render();
 });
 
