@@ -14,6 +14,23 @@
       padding: 20px;
     }
 
+    #inputBox {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      gap: 10px;
+    }
+
+    input {
+      width: 250px;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px;
+      cursor: pointer;
+    }
+
     #board {
       display: flex;
       flex-direction: column;
@@ -23,37 +40,23 @@
     }
 
     .note {
-      width: 250px;
+      width: 260px;
       padding: 15px;
-      background: yellow;
+      background: #fff176;
       box-shadow: 0 5px 10px rgba(0,0,0,0.2);
       position: relative;
+      transform: rotate(-1deg);
     }
 
     .pin {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       background: red;
       border-radius: 50%;
       position: absolute;
-      top: -5px;
+      top: -6px;
       left: 50%;
       transform: translateX(-50%);
-    }
-
-    #inputBox {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    input {
-      width: 200px;
-      padding: 10px;
-    }
-
-    button {
-      padding: 10px;
     }
   </style>
 </head>
@@ -68,33 +71,68 @@
 
 <div id="board"></div>
 
-<script>
-let notes = [];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  query, 
+  orderBy 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-function postNote() {
+// 🔴 PASTE YOUR FIREBASE CONFIG HERE
+const firebaseConfig = {
+  apiKey: "AIzaSyAnQ5m6D1ZI3EDuj_64XToz88bWNtrrLMw",
+  authDomain: "onenotewall.firebaseapp.com",
+  projectId: "onenotewall",
+  storageBucket: "onenotewall.firebasestorage.app",
+  messagingSenderId: "448667720353",
+  appId: "1:448667720353:web:4c85f30747184163bb2ee0",
+  measurementId: "G-DH3D886SM3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const notesRef = collection(db, "notes");
+
+// POST NOTE
+window.postNote = async function () {
   const msg = document.getElementById("message").value;
   if (!msg) return;
 
-  notes.unshift(msg);
+  await addDoc(notesRef, {
+    message: msg,
+    timestamp: Date.now()
+  });
 
   document.getElementById("message").value = "";
-  render();
-}
+};
 
-function render() {
+// LIVE LOAD NOTES
+const q = query(notesRef);
+
+onSnapshot(q, (snapshot) => {
   const board = document.getElementById("board");
   board.innerHTML = "";
 
-  notes.forEach(text => {
-    const div = document.createElement("div");
-    div.className = "note";
-    div.innerHTML = `
-      <div class="pin"></div>
-      ${text}
-    `;
-    board.appendChild(div);
-  });
-}
+  snapshot.docs
+    .sort((a, b) => b.data().timestamp - a.data().timestamp)
+    .forEach(doc => {
+      const data = doc.data();
+
+      const div = document.createElement("div");
+      div.className = "note";
+      div.innerHTML = `
+        <div class="pin"></div>
+        ${data.message}
+      `;
+
+      board.appendChild(div);
+    });
+});
 </script>
 
 </body>
