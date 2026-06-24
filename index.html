@@ -4,118 +4,222 @@
   <title>On The Wall (OTW)</title>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #b8864b;
-    }
+   body {
+  margin: 0;
+  font-family: Arial, sans-serif;
 
-    h1 {
-      text-align: center;
-      margin: 10px 0 0;
-    }
+  background-image:
+    linear-gradient(
+      rgba(0,0,0,.12),
+      rgba(0,0,0,.12)
+    ),
+    url("https://wallpapers.com/images/hd/cork-board-background-2000-x-1328-0z2f3nkzu8w4q19a.jpg");
 
-    .sub {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.7;
-      margin-bottom: 10px;
-    }
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
 
-    #topbar, #controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
 
-    input, select, button {
-      padding: 8px;
-      font-size: 13px;
-    }
+  background-image:
+    repeating-radial-gradient(
+      circle,
+      rgba(255,255,255,.015) 0px,
+      rgba(255,255,255,.015) 1px,
+      transparent 2px,
+      transparent 4px
+    );
 
-    #board {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      padding-bottom: 80px;
-    }
+  pointer-events: none;
+}
 
-    .note {
-      width: 300px;
-      padding: 14px;
-      border-radius: 10px;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.3);
-      position: relative;
-      transform: rotate(var(--tilt, 0deg));
-    }
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
 
-    .pin {
-      position: absolute;
-      top: -7px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 14px;
-      height: 14px;
-      background: radial-gradient(circle, #ff4d4d, #900);
-      border-radius: 50%;
-    }
+  background:
+    radial-gradient(
+      circle,
+      transparent 40%,
+      rgba(0,0,0,.30) 100%
+    );
 
-    .meta {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      opacity: 0.75;
-    }
+  pointer-events: none;
+}
 
-    .avatar {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #333;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-    }
+h1 {
+  text-align: center;
+  margin: 10px 0 0;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,.5);
+}
 
-    .actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 10px;
-      font-size: 12px;
-      align-items: center;
-    }
+.sub {
+  text-align: center;
+  color: white;
+  opacity: .9;
+  margin-bottom: 10px;
+}
 
-    .emoji-picker {
-      display: none;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 6px;
-    }
+#topbar,
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  position: relative;
+  z-index: 1;
+}
 
-    .emoji-picker span {
-      cursor: pointer;
-      font-size: 16px;
-    }
+input,
+select,
+button {
+  padding: 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: none;
+}
 
-    .reply {
-      font-size: 12px;
-      margin-left: 10px;
-      border-left: 2px solid #999;
-      padding-left: 6px;
-      margin-top: 4px;
-    }
+#board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 80px;
+  position: relative;
+  z-index: 1;
+}
 
-    .count {
-      font-size: 12px;
-      opacity: 0.7;
-      margin-top: 6px;
-    }
+.note {
+  width: 300px;
+  padding: 14px;
+  border-radius: 6px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  position: relative;
+  transform: rotate(var(--tilt));
+  transition: .2s;
+}
+
+.note:hover {
+  transform: rotate(var(--tilt)) scale(1.02);
+}
+
+.pin {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle,#ff4d4d,#900);
+  border-radius: 50%;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #333;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions {
+  margin-top: 8px;
+}
+
+.reactionBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.reactionChip {
+  background: rgba(255,255,255,.5);
+  padding: 4px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.emoji-picker {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.emoji-picker span {
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.reply {
+  font-size: 12px;
+  margin-top: 5px;
+  margin-left: 10px;
+  padding-left: 6px;
+  border-left: 2px solid #999;
+}
+
+.profileCard {
+  width: 320px;
+
+  background: rgba(255,255,255,.92);
+
+  border-radius: 16px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  margin-bottom: 15px;
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.25);
+}
+
+.profileAvatar {
+  width: 70px;
+  height: 70px;
+
+  border-radius: 50%;
+
+  background: #333;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: auto;
+
+  font-size: 30px;
+}
+
+.count {
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 6px;
+}
   </style>
 </head>
 
@@ -134,13 +238,6 @@
   <input id="message" placeholder="Write a note..." />
   <input id="song" placeholder="Spotify link (optional)" />
   <input id="search" placeholder="Search notes..." oninput="render()" />
-
-  <select id="color">
-    <option value="#fff3a6">Yellow</option>
-    <option value="#a6f3ff">Blue</option>
-    <option value="#ffa6d1">Pink</option>
-    <option value="#b7ffa6">Green</option>
-  </select>
 
   <select id="mood">
     <option value="💬">Neutral</option>
@@ -187,8 +284,13 @@ let page = "explore";
 
 /* USER */
 let user = localStorage.getItem("otw_user");
+
 if (!user) {
-  user = prompt("OTW username") || "Anonymous";
+  const entered =
+    prompt("Choose your OTW username") || "anonymous";
+
+  user = entered.trim().toLowerCase();
+
   localStorage.setItem("otw_user", user);
 }
 
@@ -199,16 +301,28 @@ window.setPage = (p) => {
 };
 
 /* POST */
+  const moodColors = {
+  "💬": "#fff3a6",
+  "❤️": "#ffa6d1",
+  "😔": "#a6f3ff",
+  "🔥": "#ffb3a6",
+  "✨": "#b7ffa6",
+  "🧠": "#d9b3ff"
+};
+  
 window.postNote = async function () {
   const msg = document.getElementById("message").value;
   if (!msg) return;
 
-  await addDoc(notesRef, {
-    name: user,
-    message: msg,
-    song: document.getElementById("song").value,
-    color: document.getElementById("color").value,
-    mood: document.getElementById("mood").value,
+  const mood =
+  document.getElementById("mood").value;
+
+await addDoc(notesRef, {
+  name: user,
+  message: msg,
+  song: document.getElementById("song").value,
+  mood: mood,
+  color: moodColors[mood],
     reactions: {},
     replies: [],
     pinned: false,
@@ -226,7 +340,10 @@ function extractSpotifyID(url){
 }
 
 /* EMOJIS */
-const emojis = ["❤️","😂","😭","🔥","👍","👏","😡","😱","💀","✨","🥺","😔","😴","🤯","💯","😎","🤍","💔","🙏","🎧"];
+const emojis = [
+  "❤️","😂","😭","🔥","👍","👏","😡","😱","💀","✨",
+  "🥺","😔","😴","🤯","💯","😎","🤍","💔","🙏","🎧"
+];
 
 window.react = async (id, e) => {
   const ref = doc(db,"notes",id);
@@ -240,8 +357,11 @@ window.react = async (id, e) => {
 };
 
 window.toggleEmoji = (id) => {
-  const el = document.getElementById("emoji-"+id);
-  el.style.display = el.style.display === "flex" ? "none" : "flex";
+  const el = document.getElementById("emoji-" + id);
+  if (!el) return;
+
+  el.style.display =
+    el.style.display === "flex" ? "none" : "flex";
 };
 
 window.reply = async (id) => {
@@ -266,9 +386,60 @@ function score(n){
 }
 
 /* RENDER */
+  function getUserStats(username){
+
+  const posts =
+    allNotes.filter(n => n.name === username);
+
+  const postCount = posts.length;
+
+  const reactionCount =
+    posts.reduce((sum,n)=>{
+      return sum +
+      Object.values(n.reactions || {})
+      .reduce((a,b)=>a+b,0);
+    },0);
+
+  const replyCount =
+    posts.reduce((sum,n)=>{
+      return sum +
+      (n.replies || []).length;
+    },0);
+
+  return {
+    postCount,
+    reactionCount,
+    replyCount
+  };
+}
+  
 function render(){
   const board = document.getElementById("board");
   board.innerHTML = "";
+  if(page === "profile"){
+
+  const stats = getUserStats(user);
+
+  board.innerHTML += `
+    <div class="profileCard">
+
+      <div class="profileAvatar">
+        ${user[0].toUpperCase()}
+      </div>
+
+      <h2>
+  ${user.charAt(0).toUpperCase() + user.slice(1)}
+</h2>
+
+      <p>📝 ${stats.postCount} Posts</p>
+
+      <p>❤️ ${stats.reactionCount} Reactions</p>
+
+      <p>💬 ${stats.replyCount} Replies</p>
+
+    </div>
+  `;
+}
 
   let search = document.getElementById("search").value.toLowerCase();
 
@@ -289,7 +460,10 @@ function render(){
     const div = document.createElement("div");
     div.className="note";
 
-    div.style.background = n.color || "#fff3a6";
+    div.style.background =
+  n.color ||
+  moodColors[n.mood] ||
+  "#fff3a6";
     div.style.setProperty("--tilt",(Math.random()*6-3)+"deg");
 
     const total = Object.values(n.reactions||{}).reduce((a,b)=>a+b,0);
@@ -299,28 +473,59 @@ function render(){
       <div class="pin"></div>
 
       <div class="meta">
-        <div class="avatar">${initial}</div>
+        <div class="avatar" onclick="setPage('profile')">
+  ${initial}
+</div>>
         ${n.mood} ${n.name}
       </div>
 
       <div>${n.message}</div>
 
       ${n.song ? `
-        <iframe width="100%" height="80"
-          src="https://open.spotify.com/embed/track/${extractSpotifyID(n.song)}">
-        </iframe>
+        <div style="margin-top:8px;">
+  🎧 <a href="${n.song}" target="_blank">Open Song</a>
+</div>
       ` : ""}
 
       <div class="count">❤️ ${total} reactions · 💬 ${(n.replies||[]).length} replies</div>
 
-      <div class="actions">
-        <button onclick="reply('${n.id}')">💬 Reply</button>
-        <button onclick="toggleEmoji('${n.id}')">😊 React</button>
-      </div>
+     <div class="actions">
 
-      <div id="emoji-${n.id}" class="emoji-picker">
-        ${emojis.map(e=>`<span onclick="react('${n.id}','${e}')">${e}</span>`).join("")}
-      </div>
+  <div class="reactionBar">
+
+    <span class="reactionChip" onclick="react('${n.id}','❤️')">
+      ❤️ ${n.reactions?.["❤️"] || 0}
+    </span>
+
+    <span class="reactionChip" onclick="react('${n.id}','😂')">
+      😂 ${n.reactions?.["😂"] || 0}
+    </span>
+
+    <span class="reactionChip" onclick="react('${n.id}','🔥')">
+      🔥 ${n.reactions?.["🔥"] || 0}
+    </span>
+
+    <span class="reactionChip" onclick="react('${n.id}','✨')">
+      ✨ ${n.reactions?.["✨"] || 0}
+    </span>
+
+    <span class="reactionChip" onclick="react('${n.id}','💀')">
+      💀 ${n.reactions?.["💀"] || 0}
+    </span>
+
+    <button onclick="toggleEmoji('${n.id}')">➕</button>
+
+  </div>
+
+  <button onclick="reply('${n.id}')">💬 Reply</button>
+
+</div>
+
+     <div id="emoji-${n.id}" class="emoji-picker">
+  ${emojis.map(e =>
+    `<span onclick="react('${n.id}','${e}')">${e}</span>`
+  ).join("")}
+</div>
 
       ${(n.replies||[]).map(r=>`
         <div class="reply"><b>${r.user}:</b> ${r.text}</div>
