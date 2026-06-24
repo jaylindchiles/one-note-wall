@@ -39,10 +39,13 @@
     .note {
       width: 290px;
       padding: 14px;
-      background: #fff3a6;
       border-radius: 8px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.3);
       position: relative;
+
+      /* ✅ FIX: sticky note tilt restored */
+      transform: rotate(var(--tilt, 0deg));
+      transition: transform 0.2s ease;
     }
 
     .meta {
@@ -104,9 +107,10 @@
       margin-top: 4px;
     }
 
-    .small-btn {
+    .reaction-count {
       font-size: 12px;
-      cursor: pointer;
+      opacity: 0.7;
+      margin-top: 6px;
     }
   </style>
 </head>
@@ -125,6 +129,7 @@
   <input id="message" placeholder="Write a note..." />
   <input id="song" placeholder="Spotify link (optional)" />
 
+  <!-- ✅ FIX: color now properly saved & used -->
   <select id="color">
     <option value="#fff3a6">Yellow</option>
     <option value="#a6f3ff">Blue</option>
@@ -175,14 +180,14 @@ const notesRef = collection(db, "notes");
 let allNotes = [];
 let page = "explore";
 
-/* PROFILE */
+/* USER */
 let user = localStorage.getItem("user");
 if (!user) {
   user = prompt("Username") || "Anonymous";
   localStorage.setItem("user", user);
 }
 
-/* PAGE SWITCH */
+/* PAGE */
 window.setPage = (p) => {
   page = p;
   render();
@@ -197,11 +202,10 @@ window.postNote = async function () {
     name: user,
     message: msg,
     song: document.getElementById("song").value,
-    color: document.getElementById("color").value,
+    color: document.getElementById("color").value, // ✅ FIXED
     mood: document.getElementById("mood").value,
     reactions: {},
     replies: [],
-    pinned: false,
     timestamp: Date.now()
   });
 
@@ -215,14 +219,6 @@ function extractSpotifyID(url){
   catch { return ""; }
 }
 
-/* SMART TREND SCORE */
-function score(n){
-  const r = Object.values(n.reactions||{}).reduce((a,b)=>a+b,0);
-  const rep = (n.replies||[]).length;
-  const age = (Date.now() - n.timestamp)/10000000;
-  return r*2 + rep*3 - age;
-}
-
 /* EMOJIS */
 const emojis = ["❤️","😂","😭","🔥","👍","👏","😡","😱","💀","✨","🥺","😔","😴","🤯","💯","😎","🤍","💔","🙏","🎧"];
 
@@ -232,12 +228,11 @@ window.react = async (id, e) => {
   const data = snap.data();
 
   const r = data.reactions || {};
-  r[e] = (r[e]||0)+1;
+  r[e] = (r[e] || 0) + 1;
 
   await updateDoc(ref,{reactions:r});
 };
 
-/* TOGGLE EMOJI PICKER */
 window.toggleEmoji = (id) => {
   const el = document.getElementById("emoji-"+id);
   el.style.display = el.style.display === "flex" ? "none" : "flex";
@@ -246,7 +241,7 @@ window.toggleEmoji = (id) => {
 /* REPLY */
 window.reply = async (id) => {
   const text = prompt("Reply:");
-  if(!text) return;
+  if (!text) return;
 
   const ref = doc(db,"notes",id);
   const snap = await getDoc(ref);
@@ -268,7 +263,11 @@ function render(){
   if(page==="profile") list = list.filter(n=>n.name===user);
 
   if(page==="trending"){
-    list.sort((a,b)=>score(b)-score(a));
+    list.sort((a,b)=>{
+      const ar = Object.values(a.reactions||{}).reduce((x,y)=>x+y,0);
+      const br = Object.values(b.reactions||{}).reduce((x,y)=>x+y,0);
+      return br-ar;
+    });
   } else {
     list.sort((a,b)=>b.timestamp-a.timestamp);
   }
@@ -279,7 +278,15 @@ function render(){
 
     const initial = (n.name||"A")[0].toUpperCase();
 
-    div.innerHTML=`
+    /* ✅ FIX: color ALWAYS comes from Firestore */
+    div.style.background = n.color || "#fff3a6";
+
+    /* ✅ FIX: sticky note tilt restored */
+    div.style.setProperty("--tilt", (Math.random()*6 - 3) + "deg");
+
+    const totalReactions = Object.values(n.reactions||{}).reduce((a,b)=>a+b,0);
+
+    div.innerHTML = `
       <div class="pin"></div>
 
       <div class="meta">
@@ -295,9 +302,12 @@ function render(){
         </iframe>
       ` : ""}
 
+      <!-- ✅ FIX: reaction counter restored -->
+      <div class="reaction-count">❤️ ${totalReactions} reactions</div>
+
       <div class="actions">
-        <button class="small-btn" onclick="reply('${n.id}')">💬 Reply</button>
-        <button class="small-btn" onclick="toggleEmoji('${n.id}')">😊 React</button>
+        <button onclick="reply('${n.id}')">💬 Reply</button>
+        <button onclick="toggleEmoji('${n.id}')">😊 React</button>
       </div>
 
       <div id="emoji-${n.id}" class="emoji-picker">
